@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Do You Actually Need Training?</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,700;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --sand: #FFF1B5;
+    --clay: #d9cfa0;
+    --bark: #43302E;
+    --moss: #2e5a4a;
+    --slate: #43302E;
+    --ink: #43302E;
+    --warm-white: #FFFDF0;
+    --accent: #43302E;
+    --accent-soft: #C1DBE8;
+    --gold: #43302E;
+    --gold-soft: #FFF1B5;
+    --green: #2e5a4a;
+    --green-soft: #C1DBE8;
+    --radius: 16px;
+  }
+
+  html, body {
+    min-height: 100vh;
+    background: var(--sand);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+
+  /* Background texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle at 20% 20%, rgba(193,219,232,0.25) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, rgba(67,48,46,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+  }
+
+  /* SCREEN SYSTEM */
+  .screen {
+    display: none;
+    opacity: 0;
+    width: 100%;
+    max-width: 720px;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  .screen.active {
+    display: block;
+    animation: fadeIn 0.5s ease forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* PROGRESS BAR */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: #43302E;
+    transition: width 0.5s ease;
+    z-index: 100;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--warm-white);
+    border-radius: var(--radius);
+    padding: 2.5rem;
+    box-shadow: 0 2px 12px rgba(28,35,51,0.07), 0 8px 32px rgba(28,35,51,0.04);
+    border: 1px solid rgba(212,196,168,0.4);
+  }
+
+  /* TYPOGRAPHY */
+  .eyebrow {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--bark);
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.15;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 1rem;
+  }
+
+  h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    font-size: 15px;
+    color: var(--slate);
+    margin-bottom: 1rem;
+    font-weight: 300;
+  }
+
+  p:last-child { margin-bottom: 0; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.75rem 1.75rem;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--warm-white);
+  }
+  .btn-primary:hover {
+    background: var(--slate);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(28,35,51,0.2);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1.5px solid var(--clay);
+  }
+  .btn-secondary:hover {
+    border-color: var(--bark);
+    background: var(--sand);
+  }
+
+  /* CHOICE OPTIONS */
+  .choice-grid {
+    display: grid;
+    gap: 10px;
+    margin: 1.5rem 0;
+  }
+
+  .choice-btn {
+    width: 100%;
+    text-align: left;
+    padding: 1rem 1.25rem;
+    background: var(--sand);
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--slate);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .choice-btn:hover {
+    border-color: var(--bark);
+    color: var(--ink);
+    background: var(--warm-white);
+    transform: translateX(4px);
+  }
+
+  .choice-btn.selected {
+    border-color: var(--bark);
+    background: var(--warm-white);
+    color: var(--ink);
+  }
+
+  .choice-btn.correct {
+    border-color: var(--green);
+    background: var(--green-soft);
+    color: var(--moss);
+  }
+
+  .choice-btn.wrong {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .choice-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: #C1DBE8;
+    color: #43302E;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* FEEDBACK BOX */
+  .feedback-box {
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    font-size: 14px;
+    margin-top: 1rem;
+    display: none;
+    animation: fadeIn 0.3s ease forwards;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  .feedback-box.info {
+    background: var(--gold-soft);
+    border-left: 3px solid var(--gold);
+    color: #5c4420;
+  }
+
+  .feedback-box.success {
+    background: var(--green-soft);
+    border-left: 3px solid var(--green);
+    color: var(--moss);
+  }
+
+  .feedback-box.warn {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    color: #7a2c1a;
+  }
+
+  /* REVEAL CARDS */
+  .reveal-card {
+    background: var(--sand);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 10px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: all 0.25s ease;
+  }
+
+  .reveal-card:hover {
+    border-color: var(--clay);
+    background: var(--warm-white);
+  }
+
+  .reveal-card .vague {
+    font-size: 14px;
+    color: var(--slate);
+    font-weight: 300;
+  }
+
+  .reveal-card .clear {
+    display: none;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--clay);
+    font-size: 14px;
+    color: var(--moss);
+    font-weight: 500;
+  }
+
+  .reveal-card.open .clear { display: block; }
+  .reveal-card.open { border-color: var(--green); background: var(--warm-white); }
+
+  .reveal-hint {
+    font-size: 11px;
+    color: var(--bark);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  /* FEATURE CARDS */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin: 1.25rem 0;
+  }
+
+  @media (max-width: 500px) { .feature-grid { grid-template-columns: 1fr; } }
+
+  .feature-card {
+    background: var(--sand);
+    border: 1.5px solid transparent;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .feature-card:hover, .feature-card.open {
+    background: var(--warm-white);
+    border-color: var(--clay);
+  }
+
+  .feature-card .icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .feature-card .label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .feature-card .detail {
+    display: none;
+    font-size: 13px;
+    color: var(--slate);
+    font-weight: 300;
+    line-height: 1.5;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--clay);
+  }
+
+  .feature-card.open .detail { display: block; }
+
+  /* SCENARIO CARDS (Yes/No) */
+  .scenario-item {
+    background: var(--sand);
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 10px;
+    border: 1.5px solid transparent;
+  }
+
+  .scenario-item p.scenario-text {
+    font-size: 14px;
+    color: var(--slate);
+    font-weight: 300;
+    margin-bottom: 0.75rem;
+  }
+
+  .yn-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  .yn-btn {
+    padding: 6px 20px;
+    border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1.5px solid var(--clay);
+    background: var(--warm-white);
+    color: var(--slate);
+    transition: all 0.2s ease;
+  }
+
+  .yn-btn:hover { border-color: var(--bark); color: var(--ink); }
+  .yn-btn.correct-ans { background: var(--green-soft); border-color: var(--green); color: var(--moss); }
+  .yn-btn.wrong-ans { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+  .scenario-feedback {
+    display: none;
+    font-size: 13px;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-weight: 300;
+  }
+
+  /* STEP INDICATOR */
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1.5rem;
+  }
+
+  .step-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--clay);
+    transition: all 0.3s ease;
+  }
+
+  .step-dot.active { background: var(--bark); width: 20px; border-radius: 3px; }
+  .step-dot.done { background: var(--moss); }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: #C1DBE8;
+    border: 1.5px solid #43302E;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* SCENARIO ILLUSTRATION */
+  .scenario-illo {
+    width: 100%;
+    height: 160px;
+    background: linear-gradient(135deg, #FFF1B5 0%, #C1DBE8 100%);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scenario-illo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(255,255,255,0.15) 10px,
+      rgba(255,255,255,0.15) 20px
+    );
+  }
+
+  .illo-text {
+    font-family: 'Fraunces', serif;
+    font-size: 48px;
+    z-index: 1;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.1));
+  }
+
+  /* FINAL FEEDBACK BLOCK */
+  .final-feedback {
+    border-radius: 14px;
+    padding: 1.5rem;
+    margin: 1.25rem 0;
+  }
+
+  .final-feedback.good { background: #C1DBE8; border-left: 4px solid #43302E; }
+  .final-feedback.neutral { background: #FFF1B5; border-left: 4px solid #43302E; }
+  .final-feedback.warn { background: #FFF1B5; border-left: 4px solid #43302E; }
+
+  .final-feedback h3 { color: var(--ink); margin-bottom: 0.5rem; }
+  .final-feedback p { color: var(--slate); font-size: 14px; margin: 0; }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--clay);
+    margin: 1.5rem 0;
+    opacity: 0.5;
+  }
+
+  /* NAV ROW */
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1.75rem;
+    gap: 1rem;
+  }
+
+  .nav-row .spacer { flex: 1; }
+</style>
+</head>
+<body>
+
+<div id="progress-bar" style="width: 0%"></div>
+
+<div id="app">
+
+  <!-- SCREEN 1: INTRO -->
+  <div class="screen active" id="s-intro">
+    <div class="card">
+      <div class="eyebrow">Learning Module</div>
+      <h1>Do You Actually Need Training?</h1>
+      <p>Seeing a performance problem in your team? Before requesting a training programme, let's make sure you're solving the right thing.</p>
+      <p>This module will help you identify root causes, ask better questions, and choose the most effective solution.</p>
+      <div style="margin-top: 2rem;">
+        <button class="btn btn-primary" onclick="goTo('s-scenario')">Start &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: SCENARIO -->
+  <div class="screen" id="s-scenario">
+    <div class="card">
+      <div class="eyebrow">The Situation</div>
+      <div class="scenario-illo" style="padding:0; overflow:hidden;">
+        <img src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExOWNlY2gxOWJ5aW9mYmcxdzJ2NGY1cDBxb2gxeHoyd3doNzcyemlxcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/wjEQMRyynvrdx5g7Mn/giphy.gif" alt="Stressed at work" style="width:100%; height:100%; object-fit:cover; display:block;" />
+      </div>
+      <h2>Your team is struggling</h2>
+      <p>CSAT scores are declining and deadlines are being missed. You've already tried coaching, but nothing seems to be improving. You're frustrated and need a solution — fast.</p>
+      <p style="font-size: 13px; font-style: italic; color: var(--bark);">Sound familiar? Let's work through this together.</p>
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-intro')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="goTo('s-decision')">Continue &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: DECISION -->
+  <div class="screen" id="s-decision">
+    <div class="card">
+      <div class="eyebrow">Your First Move</div>
+      <h2>What do you do next?</h2>
+      <p>Choose the action that best reflects your instinct. There's no right answer yet — this is about understanding your starting point.</p>
+
+      <div class="choice-grid" id="decision-choices">
+        <button class="choice-btn" onclick="selectDecision(0, this)">
+          <span class="choice-num">1</span>
+          Request training from the learning team
+        </button>
+        <button class="choice-btn" onclick="selectDecision(1, this)">
+          <span class="choice-num">2</span>
+          Investigate the root cause of the problem
+        </button>
+        <button class="choice-btn" onclick="selectDecision(2, this)">
+          <span class="choice-num">3</span>
+          Consult someone more experienced
+        </button>
+        <button class="choice-btn" onclick="selectDecision(3, this)">
+          <span class="choice-num">4</span>
+          Implement stricter performance tracking
+        </button>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-scenario')">&larr; Back</button>
+        <button class="btn btn-primary" id="decision-next" style="display:none" onclick="goTo('s-learn-a')">Continue &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4A: ROOT CAUSE -->
+  <div class="screen" id="s-learn-a">
+    <div class="card">
+      <div class="step-indicator" id="steps-a"></div>
+      <div class="section-header">
+        <div class="section-icon">🔍</div>
+        <div>
+          <div class="eyebrow">Section 1 of 5</div>
+          <h2 style="margin-bottom:0">Identify the Root Cause</h2>
+        </div>
+      </div>
+      <p>Not every performance problem is a training problem. Before jumping to solutions, you need to understand <em>why</em> the gap exists.</p>
+      <p style="font-weight: 500; font-size: 14px; color: var(--ink);">Click each potential root cause to explore its implications:</p>
+
+      <div class="choice-grid" style="margin-top:1rem">
+        <button class="choice-btn" onclick="showFeedback('rc-knowledge', this)">
+          <span class="choice-num">A</span> Lack of knowledge or skill
+        </button>
+        <button class="choice-btn" onclick="showFeedback('rc-process', this)">
+          <span class="choice-num">B</span> Unclear or broken process
+        </button>
+        <button class="choice-btn" onclick="showFeedback('rc-motivation', this)">
+          <span class="choice-num">C</span> Low motivation or engagement
+        </button>
+        <button class="choice-btn" onclick="showFeedback('rc-tools', this)">
+          <span class="choice-num">D</span> Poor or missing tools
+        </button>
+      </div>
+
+      <div class="feedback-box info" id="rc-knowledge">
+        <strong>Skill gap?</strong> This is the one case where training might actually help. If people genuinely don't know <em>how</em> to do something, structured learning can close that gap.
+      </div>
+      <div class="feedback-box info" id="rc-process">
+        <strong>Process issue?</strong> Training won't help here. If the process is broken or unclear, even skilled people will fail. Fix the workflow first.
+      </div>
+      <div class="feedback-box info" id="rc-motivation">
+        <strong>Motivation gap?</strong> This points to leadership, culture, or recognition issues — not a skills deficit. Training rarely increases motivation.
+      </div>
+      <div class="feedback-box info" id="rc-tools">
+        <strong>Tools problem?</strong> You can train people endlessly, but if they're working with inadequate tools, performance will remain limited. Address the environment.
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-decision')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="goTo('s-learn-b')">Next Section &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4B: DEFINE THE PROBLEM -->
+  <div class="screen" id="s-learn-b">
+    <div class="card">
+      <div class="step-indicator" id="steps-b"></div>
+      <div class="section-header">
+        <div class="section-icon">🎯</div>
+        <div>
+          <div class="eyebrow">Section 2 of 5</div>
+          <h2 style="margin-bottom:0">Define the Problem Clearly</h2>
+        </div>
+      </div>
+      <p>Vague problems lead to vague solutions. The difference between a symptom and a real problem is specificity. Click each card to see the difference.</p>
+
+      <div style="margin: 1.25rem 0;">
+        <div class="reveal-card" onclick="toggleReveal(this)">
+          <div class="reveal-hint">Click to clarify →</div>
+          <div class="vague">❌ "The team is underperforming"</div>
+          <div class="clear">✅ "Average response time exceeds 48 hours, against a 24-hour SLA"</div>
+        </div>
+        <div class="reveal-card" onclick="toggleReveal(this)">
+          <div class="reveal-hint">Click to clarify →</div>
+          <div class="vague">❌ "Customer satisfaction is low"</div>
+          <div class="clear">✅ "CSAT dropped from 82% to 64% in Q3, concentrated in the returns process"</div>
+        </div>
+        <div class="reveal-card" onclick="toggleReveal(this)">
+          <div class="reveal-hint">Click to clarify →</div>
+          <div class="vague">❌ "Deadlines are being missed"</div>
+          <div class="clear">✅ "3 of 5 project milestones in Q4 were delivered more than 5 days late"</div>
+        </div>
+        <div class="reveal-card" onclick="toggleReveal(this)">
+          <div class="reveal-hint">Click to clarify →</div>
+          <div class="vague">❌ "Team communication needs improving"</div>
+          <div class="clear">✅ "Stakeholders report receiving updates only after issues escalate, not proactively"</div>
+        </div>
+      </div>
+
+      <p style="font-size: 13px; color: var(--bark); font-style: italic;">Specific problem statements unlock specific solutions. You can't design a training programme for "underperforming".</p>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-learn-a')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="goTo('s-learn-c')">Next Section &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4C: TALK TO THE RIGHT PEOPLE -->
+  <div class="screen" id="s-learn-c">
+    <div class="card">
+      <div class="step-indicator" id="steps-c"></div>
+      <div class="section-header">
+        <div class="section-icon">💬</div>
+        <div>
+          <div class="eyebrow">Section 3 of 5</div>
+          <h2 style="margin-bottom:0">Talk to the Right People</h2>
+        </div>
+      </div>
+      <p>Your perspective as a manager is partial. Before deciding on any solution, gather insights from the right sources. Who would you talk to first?</p>
+
+      <div class="choice-grid" id="talk-choices">
+        <button class="choice-btn" onclick="showTalkFeedback('talk-team', this)">
+          <span class="choice-num">A</span> The team members directly involved
+        </button>
+        <button class="choice-btn" onclick="showTalkFeedback('talk-colleague', this)">
+          <span class="choice-num">B</span> An experienced colleague or peer
+        </button>
+        <button class="choice-btn" onclick="showTalkFeedback('talk-reports', this)">
+          <span class="choice-num">C</span> Rely only on dashboards and reports
+        </button>
+      </div>
+
+      <div class="feedback-box success" id="talk-team">
+        <strong>Great start.</strong> Your team members experience the problem daily. They'll surface friction you've never seen — tool limitations, unclear priorities, missing information. Their insights are essential.
+      </div>
+      <div class="feedback-box success" id="talk-colleague">
+        <strong>Smart move.</strong> Experienced colleagues bring outside perspective and pattern recognition. They've likely seen similar situations and can challenge your assumptions before you commit to a solution.
+      </div>
+      <div class="feedback-box warn" id="talk-reports">
+        <strong>Proceed carefully.</strong> Data confirms what happened, but it rarely tells you why. Reports are a starting point — not a substitute for direct conversation. You risk diagnosing from symptoms alone.
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-learn-b')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="goTo('s-learn-d')">Next Section &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4D: NON-TRAINING SOLUTIONS -->
+  <div class="screen" id="s-learn-d">
+    <div class="card">
+      <div class="step-indicator" id="steps-d"></div>
+      <div class="section-header">
+        <div class="section-icon">🛠</div>
+        <div>
+          <div class="eyebrow">Section 4 of 5</div>
+          <h2 style="margin-bottom:0">Explore Non-Training Solutions</h2>
+        </div>
+      </div>
+      <p>Training is one tool in a large toolkit. Before reaching for it, consider whether these solutions might work better. Click each to find out how.</p>
+
+      <div class="feature-grid">
+        <div class="feature-card" onclick="toggleFeature(this)">
+          <div class="icon">⚙️</div>
+          <div class="label">Improve the process</div>
+          <div class="detail">Redesigning workflows removes friction and ambiguity. People often underperform not because they lack skill, but because the process makes it hard to succeed.</div>
+        </div>
+        <div class="feature-card" onclick="toggleFeature(this)">
+          <div class="icon">🖥</div>
+          <div class="label">Provide better tools</div>
+          <div class="detail">Outdated or inadequate tools create ceiling effects on performance. Upgrading systems often yields faster results than months of training.</div>
+        </div>
+        <div class="feature-card" onclick="toggleFeature(this)">
+          <div class="icon">📋</div>
+          <div class="label">Clarify expectations</div>
+          <div class="detail">Many performance problems stem from unclear standards. When people don't know exactly what "good" looks like, they can't consistently deliver it.</div>
+        </div>
+        <div class="feature-card" onclick="toggleFeature(this)">
+          <div class="icon">🔁</div>
+          <div class="label">Improve feedback loops</div>
+          <div class="detail">Regular, specific feedback enables continuous improvement. Without it, people can't course-correct — no matter how well trained they are.</div>
+        </div>
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-learn-c')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="goTo('s-learn-e')">Next Section &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4E: WHEN TRAINING IS THE RIGHT CHOICE -->
+  <div class="screen" id="s-learn-e">
+    <div class="card">
+      <div class="step-indicator" id="steps-e"></div>
+      <div class="section-header">
+        <div class="section-icon">✅</div>
+        <div>
+          <div class="eyebrow">Section 5 of 5</div>
+          <h2 style="margin-bottom:0">When Training Is the Right Choice</h2>
+        </div>
+      </div>
+      <p>Training <em>is</em> the right answer — but only in specific situations. For each scenario below, decide whether training is needed.</p>
+
+      <div id="scenarios-container">
+
+        <div class="scenario-item" id="sc1">
+          <p class="scenario-text">📱 A new CRM system has been rolled out. The team has never used it before and can't navigate basic features.</p>
+          <div class="yn-buttons">
+            <button class="yn-btn" onclick="answerScenario('sc1', true, true, this)">Yes, training needed</button>
+            <button class="yn-btn" onclick="answerScenario('sc1', false, true, this)">No, not training</button>
+          </div>
+          <div class="scenario-feedback success" id="sc1-fb">✅ Correct. A genuine skill gap with a new system is a classic case for training. People can't perform without foundational knowledge.</div>
+          <div class="scenario-feedback warn" id="sc1-fb-wrong">The team literally doesn't know how to use the new system. This is a knowledge gap — training is the right solution here.</div>
+        </div>
+
+        <div class="scenario-item" id="sc2">
+          <p class="scenario-text">😔 Employees are disengaged and producing work below their usual standard. Morale seems low across the team.</p>
+          <div class="yn-buttons">
+            <button class="yn-btn" onclick="answerScenario('sc2', false, false, this)">No, not training</button>
+            <button class="yn-btn" onclick="answerScenario('sc2', true, false, this)">Yes, training needed</button>
+          </div>
+          <div class="scenario-feedback success" id="sc2-fb">✅ Correct. Disengagement is a motivation and culture issue — not a skill gap. Training won't address the underlying cause.</div>
+          <div class="scenario-feedback warn" id="sc2-fb-wrong">Disengagement is rarely solved by training. You'd need to explore what's affecting morale: recognition, workload, management style, or unclear purpose.</div>
+        </div>
+
+        <div class="scenario-item" id="sc3">
+          <p class="scenario-text">📞 A new compliance regulation requires staff to handle customer data differently. The risk is significant.</p>
+          <div class="yn-buttons">
+            <button class="yn-btn" onclick="answerScenario('sc3', true, true, this)">Yes, training needed</button>
+            <button class="yn-btn" onclick="answerScenario('sc3', false, true, this)">No, not training</button>
+          </div>
+          <div class="scenario-feedback success" id="sc3-fb">✅ Correct. New compliance requirements represent a clear knowledge gap with real risk. Structured training is both appropriate and necessary.</div>
+          <div class="scenario-feedback warn" id="sc3-fb-wrong">Compliance changes require people to learn new behaviours and understand the stakes. This is a genuine use case for training — especially with regulatory risk involved.</div>
+        </div>
+
+      </div>
+
+      <div class="nav-row">
+        <button class="btn btn-secondary" onclick="goTo('s-learn-d')">&larr; Back</button>
+        <button class="btn btn-primary" onclick="goTo('s-final')">See My Results &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: FINAL REFLECTION -->
+  <div class="screen" id="s-final">
+    <div class="card">
+      <div class="eyebrow">Your Reflection</div>
+      <h2>Let's revisit your first instinct</h2>
+      <p>At the start, when faced with a team performance problem, you chose:</p>
+
+      <div id="user-choice-display" style="background: var(--sand); border-radius: 12px; padding: 1rem 1.25rem; margin: 1rem 0; font-size: 14px; color: var(--ink); font-weight: 500; border-left: 3px solid var(--bark);">
+        — your choice —
+      </div>
+
+      <div id="final-feedback-block"></div>
+
+      <div class="divider"></div>
+
+      <div style="background: var(--sand); border-radius: 12px; padding: 1.25rem; text-align: center; margin-bottom: 1.5rem;">
+        <p style="font-family: 'Fraunces', serif; font-size: 1.1rem; color: var(--ink); font-weight: 500; margin: 0; font-style: italic;">"Effective solutions start with understanding the real problem."</p>
+      </div>
+
+      <div style="text-align: center;">
+        <button class="btn btn-primary" onclick="restart()">↺ Restart Module</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // State
+  let userDecision = -1;
+  const decisionLabels = [
+    "Request training from the learning team",
+    "Investigate the root cause of the problem",
+    "Consult someone more experienced",
+    "Implement stricter performance tracking"
+  ];
+
+  const screenOrder = ['s-intro','s-scenario','s-decision','s-learn-a','s-learn-b','s-learn-c','s-learn-d','s-learn-e','s-final'];
+
+  function goTo(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(id);
+    target.classList.add('active');
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    updateProgress(id);
+    if (id.startsWith('s-learn')) updateSteps(id);
+    if (id === 's-final') buildFinalScreen();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress(id) {
+    const idx = screenOrder.indexOf(id);
+    const pct = Math.round((idx / (screenOrder.length - 1)) * 100);
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+
+  function updateSteps(id) {
+    const sections = ['s-learn-a','s-learn-b','s-learn-c','s-learn-d','s-learn-e'];
+    const current = sections.indexOf(id);
+    const suffixes = ['a','b','c','d','e'];
+    suffixes.forEach((s, i) => {
+      const el = document.getElementById('steps-' + s);
+      if (!el) return;
+      el.innerHTML = sections.map((_, idx) => {
+        let cls = 'step-dot';
+        if (idx < i) cls += ' done';
+        if (idx === i) cls += ' active';
+        return `<div class="${cls}"></div>`;
+      }).join('');
+    });
+  }
+
+  // Decision screen
+  function selectDecision(index, btn) {
+    userDecision = index;
+    document.querySelectorAll('#decision-choices .choice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('decision-next').style.display = 'inline-flex';
+  }
+
+  // Root cause feedback
+  function showFeedback(id, btn) {
+    document.querySelectorAll('#s-learn-a .choice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.querySelectorAll('#s-learn-a .feedback-box').forEach(f => f.style.display = 'none');
+    const fb = document.getElementById(id);
+    fb.style.display = 'block';
+  }
+
+  // Talk feedback
+  function showTalkFeedback(id, btn) {
+    document.querySelectorAll('#talk-choices .choice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.querySelectorAll('#s-learn-c .feedback-box').forEach(f => f.style.display = 'none');
+    document.getElementById(id).style.display = 'block';
+  }
+
+  // Reveal cards
+  function toggleReveal(card) {
+    card.classList.toggle('open');
+  }
+
+  // Feature cards
+  function toggleFeature(card) {
+    card.classList.toggle('open');
+  }
+
+  // Scenario yes/no
+  function answerScenario(id, userSaidYes, correctIsYes, btn) {
+    const container = document.getElementById(id);
+    const correct = userSaidYes === correctIsYes;
+    container.querySelectorAll('.yn-btn').forEach(b => b.disabled = true);
+    btn.classList.add(correct ? 'correct-ans' : 'wrong-ans');
+
+    const fbId = correct ? id + '-fb' : id + '-fb-wrong';
+    const fb = document.getElementById(fbId);
+    if (fb) {
+      fb.style.display = 'block';
+      fb.style.background = correct ? 'var(--green-soft)' : 'var(--accent-soft)';
+      fb.style.borderLeft = correct ? '3px solid var(--green)' : '3px solid var(--accent)';
+      fb.style.color = correct ? 'var(--moss)' : '#7a2c1a';
+      fb.style.padding = '0.6rem 0.8rem';
+      fb.style.borderRadius = '8px';
+      fb.style.marginTop = '0.6rem';
+      fb.style.fontSize = '13px';
+    }
+  }
+
+  // Final screen
+  function buildFinalScreen() {
+    const label = userDecision >= 0 ? `"${decisionLabels[userDecision]}"` : "You didn't make a selection.";
+    document.getElementById('user-choice-display').textContent = label;
+
+    const feedbacks = [
+      {
+        type: 'warn',
+        title: 'Jumping straight to training is risky',
+        text: 'Requesting training before understanding the root cause can waste time and resources — and leave the real problem untouched. Training only works when the gap is genuinely about knowledge or skill. Next time, start with a diagnostic conversation before contacting the learning team.'
+      },
+      {
+        type: 'good',
+        title: 'Strong instinct — investigate first',
+        text: 'Choosing to investigate before acting shows sound judgement. Performance problems have many causes, and jumping to solutions too early often misses the mark. By diagnosing the root cause, you ensure your solution actually fits the problem.'
+      },
+      {
+        type: 'good',
+        title: 'Consulting others is a strength',
+        text: 'Seeking perspective before deciding is a hallmark of effective decision-making. Experienced colleagues can challenge your assumptions and surface patterns you might miss on your own. This approach leads to better-targeted solutions.'
+      },
+      {
+        type: 'neutral',
+        title: 'Tracking helps — but only up to a point',
+        text: 'Stricter performance tracking creates visibility and accountability, which can be valuable. However, it doesn\'t address why performance is falling — it only makes the gap more visible. Pair tracking with a genuine root cause investigation to find a real fix.'
+      }
+    ];
+
+    const fb = userDecision >= 0 ? feedbacks[userDecision] : feedbacks[1];
+    document.getElementById('final-feedback-block').innerHTML = `
+      <div class="final-feedback ${fb.type}">
+        <h3>${fb.title}</h3>
+        <p>${fb.text}</p>
+      </div>
+    `;
+  }
+
+  function restart() {
+    userDecision = -1;
+    // Reset decisions
+    document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected','correct','wrong'));
+    document.querySelectorAll('.feedback-box').forEach(f => f.style.display = 'none');
+    document.querySelectorAll('.reveal-card').forEach(c => c.classList.remove('open'));
+    document.querySelectorAll('.feature-card').forEach(c => c.classList.remove('open'));
+    document.querySelectorAll('.yn-btn').forEach(b => { b.disabled = false; b.classList.remove('correct-ans','wrong-ans'); });
+    document.querySelectorAll('.scenario-feedback').forEach(f => f.style.display = 'none');
+    document.getElementById('decision-next').style.display = 'none';
+    goTo('s-intro');
+  }
+
+  // Init
+  updateProgress('s-intro');
+</script>
+</body>
+</html>

@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio — Samareen Zubair</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;0,700;1,600&family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --rose:      #E38792;
+    --wine:      #4E0A0B;
+    --cream:     #F2EEE8;
+    --sage:      #9DAD71;
+    --rose-pale: #FAE9EB;
+    --sage-pale: #EEF2E4;
+    --wine-soft: #7A2022;
+    --ink:       #2A0608;
+    --ink2:      #6B3033;
+    --ink3:      #A06668;
+    --surface:   #FFFFFF;
+    --border:    rgba(78,10,11,0.12);
+    --border2:   rgba(78,10,11,0.22);
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Fredoka', sans-serif; background: var(--cream); color: var(--ink); font-size: 16px; line-height: 1.7; }
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2.5rem; height: 62px;
+    background: rgba(242,238,232,0.88); backdrop-filter: blur(14px);
+    border-bottom: 0.5px solid var(--border);
+  }
+  .nav-logo { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: var(--wine); text-decoration: none; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-size: 15px; font-weight: 500; color: var(--ink2); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--wine); }
+  #hero {
+    min-height: 100vh; display: flex; align-items: center;
+    padding: 6rem 2.5rem 4rem; position: relative; overflow: hidden; background: var(--cream);
+  }
+  .hero-blob { position: absolute; border-radius: 50%; pointer-events: none; filter: blur(60px); opacity: 0.32; }
+  .hero-blob.b1 { width: 520px; height: 520px; top: -80px; right: -100px; background: var(--rose); }
+  .hero-blob.b2 { width: 360px; height: 360px; bottom: -60px; left: -80px; background: var(--sage); }
+  .hero-inner { max-width: 800px; margin: 0 auto; width: 100%; position: relative; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 500; color: var(--wine);
+    background: var(--rose-pale); border: 0.5px solid rgba(227,135,146,0.5);
+    border-radius: 100px; padding: 5px 16px; margin-bottom: 1.5rem;
+    opacity: 0; animation: fadeUp 0.6s 0.1s forwards;
+  }
+  .hero-tag::before {
+    content: ''; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--rose); animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.75)} }
+  .hero-name {
+    font-family: 'Fraunces', serif; font-size: clamp(3rem,8vw,5.5rem); font-weight: 700;
+    line-height: 1.05; color: var(--ink); margin-bottom: 1.25rem;
+    opacity: 0; animation: fadeUp 0.7s 0.2s forwards;
+  }
+  .hero-name em { font-style: italic; color: var(--wine); }
+  .hero-desc {
+    font-size: 1.15rem; color: var(--ink2); max-width: 520px; margin-bottom: 2.5rem;
+    opacity: 0; animation: fadeUp 0.7s 0.35s forwards; font-weight: 400;
+  }
+  .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; opacity: 0; animation: fadeUp 0.7s 0.5s forwards; }
+  .btn-primary {
+    padding: 0.75rem 1.75rem; background: var(--wine); color: #fff; border: none;
+    border-radius: 100px; font-size: 15px; font-family: 'Fredoka', sans-serif; font-weight: 600;
+    cursor: pointer; text-decoration: none; transition: background 0.2s, transform 0.15s;
+  }
+  .btn-primary:hover { background: var(--wine-soft); transform: translateY(-2px); }
+  .btn-secondary {
+    padding: 0.75rem 1.75rem; background: transparent; color: var(--ink);
+    border: 1.5px solid var(--border2); border-radius: 100px; font-size: 15px;
+    font-family: 'Fredoka', sans-serif; font-weight: 600; cursor: pointer; text-decoration: none;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+  }
+  .btn-secondary:hover { background: var(--rose-pale); border-color: var(--rose); transform: translateY(-2px); }
+  .hero-scroll-hint {
+    position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    opacity: 0; animation: fadeUp 0.6s 1s forwards;
+  }
+  .hero-scroll-hint span { font-size: 12px; color: var(--ink3); letter-spacing: 0.08em; }
+  .scroll-line {
+    width: 1.5px; height: 36px;
+    background: linear-gradient(to bottom, var(--rose), transparent);
+    animation: scrollLine 1.8s infinite;
+  }
+  @keyframes scrollLine {
+    0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top}
+    51%{transform:scaleY(1);transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom}
+  }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
+  section { padding: 6rem 2.5rem; }
+  .section-inner { max-width: 860px; margin: 0 auto; }
+  .section-label { font-size: 12px; font-weight: 600; color: var(--rose); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .section-title { font-family: 'Fraunces', serif; font-size: clamp(1.9rem,4vw,2.7rem); font-weight: 700; color: var(--ink); margin-bottom: 1rem; line-height: 1.15; }
+  .divider { width: 44px; height: 3px; background: var(--rose); border-radius: 100px; margin: 0.75rem 0 0; }
+  #about { background: var(--cream); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; margin-top: 3rem; }
+  .about-text p { color: var(--ink2); margin-bottom: 1rem; font-size: 15.5px; font-weight: 400; }
+  .about-text p:last-child { margin-bottom: 0; }
+  .skills-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 1.5rem; }
+  .skill-tag { font-size: 13px; font-weight: 500; color: var(--wine); background: var(--rose-pale); border: 0.5px solid rgba(227,135,146,0.35); border-radius: 100px; padding: 4px 12px; }
+  .about-stats { display: flex; flex-direction: column; gap: 1rem; }
+  .stat-card {
+    background: var(--surface); border: 0.5px solid var(--border); border-radius: 16px;
+    padding: 1.1rem 1.25rem; display: flex; align-items: center; gap: 1rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .stat-card:hover { border-color: var(--rose); transform: translateX(4px); }
+  .stat-icon { font-size: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: var(--rose-pale); border-radius: 12px; flex-shrink: 0; }
+  .stat-info strong { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .stat-info span   { font-size: 13px; color: var(--ink3); font-weight: 400; }
+  /* ── CREDENTIALS ── */
+  #credentials { background: var(--cream); }
+  .creds-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3rem; }
+  .creds-col-title {
+    font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 600;
+    color: var(--ink); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px;
+  }
+  .creds-col-title span {
+    font-size: 11px; font-weight: 600; font-family: 'Fredoka', sans-serif;
+    color: var(--wine); background: var(--rose-pale);
+    border: 0.5px solid rgba(227,135,146,0.4); border-radius: 100px; padding: 3px 10px;
+    letter-spacing: 0.04em;
+  }
+  .timeline { display: flex; flex-direction: column; gap: 0; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; left: 7px; top: 8px; bottom: 8px;
+    width: 1.5px; background: linear-gradient(to bottom, var(--rose), var(--sage));
+    border-radius: 2px;
+  }
+  .timeline-item { display: flex; gap: 1.25rem; position: relative; padding-bottom: 1.5rem; }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--surface); border: 2.5px solid var(--rose);
+    flex-shrink: 0; margin-top: 3px; position: relative; z-index: 1;
+  }
+  .timeline-item:last-child .timeline-dot { border-color: var(--sage); }
+  .timeline-dot.current { background: var(--rose); }
+  .timeline-content { flex: 1; }
+  .timeline-role { font-size: 15px; font-weight: 600; color: var(--ink); line-height: 1.3; }
+  .timeline-org {
+    font-size: 13px; color: var(--wine); font-weight: 500; margin: 2px 0 3px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .timeline-org .current-badge {
+    font-size: 10px; font-weight: 600; color: var(--wine);
+    background: var(--rose-pale); border: 0.5px solid rgba(227,135,146,0.5);
+    border-radius: 100px; padding: 1px 8px;
+  }
+  .timeline-date { font-size: 12px; color: var(--ink3); font-weight: 400; }
+  .edu-list { display: flex; flex-direction: column; gap: 1rem; }
+  .edu-item {
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 14px; padding: 1rem 1.25rem;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .edu-item:hover { border-color: var(--rose); transform: translateX(4px); }
+  .edu-type {
+    font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink3); margin-bottom: 4px;
+  }
+  .edu-title { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+  .edu-place { font-size: 13px; color: var(--ink2); font-weight: 400; margin-top: 2px; }
+  /* soft skills */
+  .soft-skills-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 2rem; }
+  .soft-skill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 0.5px solid var(--border);
+    border-radius: 14px; padding: 0.65rem 1rem;
+    font-size: 14px; font-weight: 500; color: var(--ink);
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .soft-skill:hover { border-color: var(--sage); transform: translateY(-2px); }
+  .soft-skill-icon { font-size: 16px; }
+
+  #projects { background: #EDE8E0; }
+  .projects-list { display: flex; flex-direction: column; gap: 1.25rem; margin-top: 3rem; }
+  .project-card {
+    background: var(--surface); border: 0.5px solid var(--border); border-radius: 20px;
+    display: grid; grid-template-columns: 8px 1fr auto; align-items: center;
+    text-decoration: none; color: inherit; overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s; cursor: default;
+  }
+  a.project-card { cursor: pointer; }
+  .project-card:hover { transform: translateY(-3px); }
+  .project-card-accent { align-self: stretch; background: var(--rose); }
+  .project-card:nth-child(2) .project-card-accent { background: var(--sage); }
+  .project-card:nth-child(3) .project-card-accent { background: var(--wine); }
+  .project-card:hover           { border-color: var(--rose); }
+  .project-card:nth-child(2):hover { border-color: var(--sage); }
+  .project-card:nth-child(3):hover { border-color: var(--wine); }
+  .project-card-body { padding: 1.5rem 1.75rem; }
+  .project-badge {
+    display: inline-block; font-size: 11px; font-weight: 600; color: var(--wine);
+    background: var(--rose-pale); border-radius: 100px; padding: 3px 10px;
+    letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 0.6rem;
+  }
+  .project-card:nth-child(2) .project-badge { color: #3D5A1A; background: var(--sage-pale); }
+  .project-card:nth-child(3) .project-badge { color: var(--cream); background: var(--wine); }
+  .project-title { font-family: 'Fraunces', serif; font-size: 1.2rem; font-weight: 600; color: var(--ink); margin-bottom: 0.4rem; }
+  .project-desc { font-size: 14px; color: var(--ink2); line-height: 1.6; font-weight: 400; margin-bottom: 1rem; }
+  .project-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .project-tag { font-size: 12px; font-weight: 500; color: var(--ink3); background: var(--cream); border-radius: 6px; padding: 3px 9px; }
+  .project-card-arrow { padding: 0 1.75rem; font-size: 22px; color: var(--ink3); transition: color 0.2s, transform 0.2s; flex-shrink: 0; }
+  .project-card:hover           .project-card-arrow { color: var(--rose);      transform: translate(3px,-3px); }
+  .project-card:nth-child(2):hover .project-card-arrow { color: var(--sage); transform: translate(3px,-3px); }
+  .project-card:nth-child(3):hover .project-card-arrow { color: var(--wine-soft); transform: translate(3px,-3px); }
+  #contact { background: var(--cream); }
+  .contact-wrapper { margin-top: 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+  .contact-blurb { font-size: 15.5px; color: var(--ink2); margin-bottom: 1.5rem; font-weight: 400; }
+  .contact-links { display: flex; flex-direction: column; gap: 10px; }
+  .contact-link {
+    display: flex; align-items: center; gap: 12px; padding: 0.85rem 1rem;
+    background: var(--surface); border: 0.5px solid var(--border); border-radius: 14px;
+    text-decoration: none; color: var(--ink); font-size: 14px; font-weight: 500;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .contact-link:hover { border-color: var(--rose); transform: translateX(4px); }
+  .contact-link-icon { font-size: 18px; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; background: var(--rose-pale); border-radius: 10px; flex-shrink: 0; }
+  .contact-link-text strong { display: block; font-size: 14px; color: var(--ink); font-weight: 600; }
+  .contact-link-text span   { font-size: 12px; color: var(--ink3); font-weight: 400; }
+  .contact-form { display: flex; flex-direction: column; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 13px; font-weight: 600; color: var(--ink2); }
+  .form-group input, .form-group textarea {
+    padding: 0.7rem 1rem; background: var(--surface); border: 0.5px solid var(--border2);
+    border-radius: 12px; font-size: 14px; font-family: 'Fredoka', sans-serif; color: var(--ink);
+    outline: none; transition: border-color 0.2s; resize: vertical;
+  }
+  .form-group input:focus, .form-group textarea:focus { border-color: var(--rose); box-shadow: 0 0 0 3px rgba(227,135,146,0.15); }
+  .form-group textarea { min-height: 110px; }
+  footer { padding: 2rem 2.5rem; background: var(--wine); display: flex; align-items: center; justify-content: space-between; }
+  footer p { font-size: 13px; color: rgba(242,238,232,0.65); }
+  footer a { font-size: 13px; color: var(--rose); text-decoration: none; font-weight: 500; }
+  footer a:hover { text-decoration: underline; }
+  @media (max-width: 700px) {
+    nav { padding: 0 1.25rem; }
+    .nav-links { gap: 1.25rem; }
+    section { padding: 4rem 1.25rem; }
+    #hero { padding: 5rem 1.25rem 3rem; }
+    .about-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .project-card { grid-template-columns: 6px 1fr auto; }
+    .contact-wrapper { grid-template-columns: 1fr; gap: 2rem; }
+    footer { flex-direction: column; gap: 8px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#hero" class="nav-logo">Samareen Zubair</a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#credentials">Credentials</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section id="hero">
+  <div class="hero-blob b1"></div>
+  <div class="hero-blob b2"></div>
+  <div class="hero-inner">
+    <div class="hero-tag">Instructional Designer · Open to opportunities</div>
+    <h1 class="hero-name">Hi, I'm<br><em>Samareen Zubair</em></h1>
+    <p class="hero-desc">With a passion for teaching (and learning), I enjoy breaking things down into bite-sized pieces that actually make sense. I’m curious about everything from adult learning theories to planning and UI design—anything that helps create experiences that feel easy, thoughtful, and engaging. I like making things that not only look good, but truly work for the people using them.</p>
+    <div class="hero-ctas">
+      <a href="#projects" class="btn-primary">See my work</a>
+      <a href="#contact" class="btn-secondary">Get in touch</a>
+    </div>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<section id="about">
+  <div class="section-inner">
+    <div class="section-label">about me</div>
+    <h2 class="section-title">A bit about<br>who I am</h2>
+    <div class="divider"></div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>I'm an instructional designer with a passion for creating learning experiences that actually stick. I specialise in translating complex information into clear, engaging content — whether that's an interactive e-learning module, a facilitator guide, or a well-structured course.</p>
+        <p>I draw on adult learning theory, UX thinking, and a healthy obsession with clarity to design materials that meet learners where they are. I care about outcomes, not just deliverables.</p>
+        <p>Outside of work you'll find me tinkering with new tools, exploring what good design looks like, or drinking too much coffee.</p>
+        <div class="skills-row">
+          <span class="skill-tag">Instructional Design</span>
+          <span class="skill-tag">E-learning Development</span>
+          <span class="skill-tag">Curriculum Design</span>
+          <span class="skill-tag">Adult Learning Theory</span>
+          <span class="skill-tag">Storyboarding</span>
+          <span class="skill-tag">UX Writing</span>
+          <span class="skill-tag">Articulate Storyline</span>
+          <span class="skill-tag">Needs Analysis</span>
+        </div>
+      </div>
+      <div class="about-stats">
+        <div class="stat-card">
+          <div class="stat-icon">💻</div>
+          <div class="stat-info"><strong>Instructional Designer</strong><span>Learning strategy & design</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-info"><strong>Learner-centred</strong><span>Designed for real outcomes</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🌱</div>
+          <div class="stat-info"><strong>Always curious</strong><span>Learning never stops</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🤝</div>
+          <div class="stat-info"><strong>Open to collaborate</strong><span>Freelance, teams & projects</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="credentials">
+  <div class="section-inner">
+    <div class="section-label">credentials</div>
+    <h2 class="section-title">Experience &<br>education</h2>
+    <div class="divider"></div>
+
+    <div class="creds-grid">
+
+      <!-- Work Experience -->
+      <div>
+        <div class="creds-col-title">Work experience <span>3 roles</span></div>
+        <div class="timeline">
+
+          <div class="timeline-item">
+            <div class="timeline-dot current"></div>
+            <div class="timeline-content">
+              <div class="timeline-role">Associate Instructional Designer</div>
+              <div class="timeline-org">
+                Tesla · Amsterdam
+                <span class="current-badge">Current</span>
+              </div>
+              <div class="timeline-date">May 2025 — Present</div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-role">Digital Learning Developer <em style="font-style:normal;font-size:12px;color:var(--ink3)">(Interim)</em></div>
+              <div class="timeline-org">Abbott · Zwolle</div>
+              <div class="timeline-date">Aug 2024 — Apr 2025</div>
+            </div>
+          </div>
+
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-role">eLearning Developer</div>
+              <div class="timeline-org">Lepaya · Amsterdam</div>
+              <div class="timeline-date">Nov 2023 — Jul 2024</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Education & Certifications -->
+      <div>
+        <div class="creds-col-title">Education <span>2 degrees</span></div>
+        <div class="edu-list" style="margin-bottom: 2rem;">
+
+          <div class="edu-item">
+            <div class="edu-type">Research Master</div>
+            <div class="edu-title">MSc Social and Behavioral Sciences</div>
+            <div class="edu-place">Tilburg University · Netherlands</div>
+          </div>
+
+          <div class="edu-item">
+            <div class="edu-type">Bachelor</div>
+            <div class="edu-title">BA Psychology</div>
+            <div class="edu-place">Bilkent University · Ankara, Turkey</div>
+          </div>
+
+        </div>
+
+        <div class="creds-col-title">Certifications <span>2 certificates</span></div>
+        <div class="edu-list">
+
+          <div class="edu-item">
+            <div class="edu-type">Certificate · Udemy</div>
+            <div class="edu-title">Instructional Design for eLearning</div>
+            <div class="edu-place">Marina Arshavskiy</div>
+          </div>
+
+          <div class="edu-item">
+            <div class="edu-type">Certificate · Udemy</div>
+            <div class="edu-title">The Complete Instructional Designer Course</div>
+            <div class="edu-place">John Hinchliffe</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Soft Skills -->
+    <div style="margin-top: 3rem;">
+      <div class="creds-col-title">Soft skills</div>
+      <div class="soft-skills-row">
+        <div class="soft-skill"><span class="soft-skill-icon">🗂️</span> Project Management</div>
+        <div class="soft-skill"><span class="soft-skill-icon">🤝</span> Stakeholder Management</div>
+        <div class="soft-skill"><span class="soft-skill-icon">💬</span> Communication</div>
+        <div class="soft-skill"><span class="soft-skill-icon">⏱️</span> Time Management</div>
+        <div class="soft-skill"><span class="soft-skill-icon">🔍</span> Attention to Detail</div>
+        <div class="soft-skill"><span class="soft-skill-icon">🧩</span> Problem Solving</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section id="projects">
+  <div class="section-inner">
+    <div class="section-label">projects</div>
+    <h2 class="section-title">Things I've<br>designed</h2>
+    <div class="divider"></div>
+    <div class="projects-list">
+
+      <a href="Do_you_need_this_training.html" class="project-card">
+        <div class="project-card-accent"></div>
+        <div class="project-card-body">
+          <span class="project-badge">Interactive Learning</span>
+          <div class="project-title">Do You Actually Need Training?</div>
+          <p class="project-desc">A scenario-based e-learning module that guides learners through a realistic performance problem to explore when training is — and isn't — the right solution. Built with branching scenarios, flip cards, and instant feedback across 5 sections.</p>
+          <div class="project-tags">
+            <span class="project-tag">Needs Analysis</span>
+            <span class="project-tag">Scenario-based Learning</span>
+            <span class="project-tag">HTML/CSS/JS</span>
+          </div>
+        </div>
+        <div class="project-card-arrow">↗</div>
+      </a>
+
+      <div class="project-card">
+        <div class="project-card-accent"></div>
+        <div class="project-card-body">
+          <span class="project-badge">Under Construction</span>
+          <div class="project-title">Project Two</div>
+          <div class="project-tags">
+            <span class="project-tag">Coming soon</span>
+          </div>
+        </div>
+        <div class="project-card-arrow">🚧</div>
+      </div>
+
+      <div class="project-card">
+        <div class="project-card-accent"></div>
+        <div class="project-card-body">
+          <span class="project-badge">Under Construction</span>
+          <div class="project-title">Project Three</div>
+          <div class="project-tags">
+            <span class="project-tag">Coming soon</span>
+          </div>
+        </div>
+        <div class="project-card-arrow">🚧</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="contact">
+  <div class="section-inner">
+    <div class="section-label">contact</div>
+    <h2 class="section-title">Let's work<br>together</h2>
+    <div class="divider"></div>
+    <div class="contact-wrapper">
+      <div>
+        <p class="contact-blurb">I'm open to new opportunities, collaborations, or just a good conversation about learning design. Whether you have a project in mind or just want to connect — don't hesitate to reach out.</p>
+        <div class="contact-links">
+          <a href="mailto:samareenkapadia@gmail.com" target="_blank" class="contact-link">
+            <div class="contact-link-icon">✉️</div>
+            <div class="contact-link-text"><strong>Email</strong><span>samareenkapadia@gmail.com</span></div>
+          </a>
+          <a href="https://github.com/samareenkapadia" target="_blank" class="contact-link">
+            <div class="contact-link-icon">🐙</div>
+            <div class="contact-link-text"><strong>GitHub</strong><span>github.com/samareenkapadia</span></div>
+          </a>
+          <a href="https://www.linkedin.com/in/samareen-zubair-887416189/" target="_blank" class="contact-link">
+            <div class="contact-link-icon">💼</div>
+            <div class="contact-link-text"><strong>LinkedIn</strong><span>linkedin.com/in/samareen-zubair-887416189</span></div>
+          </a>
+        </div>
+      <!-- </div>
+      <form class="contact-form" onsubmit="handleSubmit(event)">
+        <div class="form-group">
+          <label for="name">Name</label>
+          <input type="text" id="name" placeholder="Your name" required />
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="your@email.com" required />
+        </div>
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" placeholder="What's on your mind?" required></textarea>
+        </div>
+        <button type="submit" class="btn-primary" id="submit-btn">Send message</button>
+      </form>
+    </div> -->
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Samareen Zubair</p>
+  <a href="#hero">Back to top ↑</a>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function handleSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Message 
