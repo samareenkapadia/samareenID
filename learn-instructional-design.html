@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Learn Instructional Design Your Way</title>
+<style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bark:    #4C3D19;
+    --forest:  #354024;
+    --sage:    #889063;
+    --sand:    #CFBB99;
+    --linen:   #E5D7C4;
+    --white:   #FDFAF6;
+    --text:    #2E2410;
+    --muted:   #7A6A52;
+    --radius:  14px;
+    --rad-sm:  8px;
+    --shadow:  0 2px 16px rgba(76,61,25,0.10);
+  }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--linen);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.65;
+  }
+
+  /* ── Screen System ── */
+  .screen {
+    display: none;
+    animation: fadeIn 0.4s ease;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .screen.active { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── Layout Containers ── */
+  .container { width: 100%; max-width: 760px; }
+  .center { text-align: center; }
+
+  /* ── Typography ── */
+  h1 { font-size: clamp(1.8rem, 5vw, 2.6rem); font-weight: 700; color: var(--bark); line-height: 1.2; }
+  h2 { font-size: 1.4rem; font-weight: 600; color: var(--bark); margin-bottom: 0.5rem; }
+  h3 { font-size: 1.1rem; font-weight: 600; color: var(--forest); margin-bottom: 0.4rem; }
+  p  { color: var(--muted); font-size: 1rem; }
+  .lead { font-size: 1.15rem; color: var(--muted); margin-top: 0.5rem; }
+  .small { font-size: 0.85rem; color: var(--muted); }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--rad-sm);
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: transform 0.12s, box-shadow 0.12s;
+    text-align: center;
+  }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(76,61,25,0.18); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn-primary   { background: var(--bark);   color: var(--linen); }
+  .btn-secondary { background: var(--forest); color: var(--linen); }
+  .btn-outline   { background: transparent;  color: var(--bark); border: 2px solid var(--bark); }
+  .btn-sage      { background: var(--sage);   color: var(--white); }
+  .btn-sand      { background: var(--sand);   color: var(--bark); }
+
+  /* ── Level Cards (Entry) ── */
+  .level-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    border: 2.5px solid transparent;
+    box-shadow: var(--shadow);
+    transition: border-color 0.2s, transform 0.15s;
+    text-align: left;
+  }
+  .level-card:hover { border-color: var(--sage); transform: translateY(-3px); }
+  .level-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .level-card h3 { color: var(--bark); font-size: 1.05rem; }
+  .level-card p { font-size: 0.88rem; margin-top: 0.3rem; }
+
+  /* ── Topic Map ── */
+  .topic-map {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  .topic-tile {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    cursor: pointer;
+    border: 2.5px solid var(--linen);
+    box-shadow: var(--shadow);
+    transition: all 0.2s;
+    position: relative;
+  }
+  .topic-tile:hover  { border-color: var(--sage); transform: translateY(-3px); }
+  .topic-tile.done   { border-color: var(--forest); background: #f0f5ec; }
+  .topic-tile.done::after { content: '✓'; position: absolute; top: 10px; right: 14px; color: var(--forest); font-weight: 700; font-size: 1.1rem; }
+  .topic-tile .emoji { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  /* ── Progress Bar ── */
+  .progress-bar-wrap { background: var(--linen); border-radius: 99px; height: 8px; width: 100%; margin: 0.5rem 0 1.5rem; }
+  .progress-bar-fill { background: var(--forest); height: 8px; border-radius: 99px; transition: width 0.5s ease; }
+
+  /* ── Scenario Callout ── */
+  .scenario-box {
+    background: linear-gradient(135deg, #f5ede0 0%, #e9d9c2 100%);
+    border-left: 4px solid var(--bark);
+    border-radius: 0 var(--rad-sm) var(--rad-sm) 0;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    color: var(--bark);
+    font-style: italic;
+    font-size: 1rem;
+  }
+  .scenario-box strong { font-style: normal; display: block; margin-bottom: 0.3rem; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--sage); }
+
+  /* ── Choice Buttons ── */
+  .choices { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 1rem; }
+  .choice-btn {
+    background: var(--white);
+    border: 2px solid var(--linen);
+    border-radius: var(--rad-sm);
+    padding: 0.9rem 1.2rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--text);
+    text-align: left;
+    transition: all 0.18s;
+    font-family: inherit;
+  }
+  .choice-btn:hover { border-color: var(--sage); background: #f7f2eb; }
+  .choice-btn.selected-correct { border-color: var(--forest); background: #edf3e6; color: var(--forest); }
+  .choice-btn.selected-wrong   { border-color: #a0533a; background: #fdf0eb; color: #a0533a; }
+  .choice-btn.selected-neutral { border-color: var(--bark); background: #f5ede0; color: var(--bark); }
+
+  /* ── Feedback Box ── */
+  .feedback-box {
+    border-radius: var(--rad-sm);
+    padding: 1rem 1.25rem;
+    margin-top: 1rem;
+    display: none;
+  }
+  .feedback-box.show { display: block; animation: fadeIn 0.3s ease; }
+  .feedback-correct { background: #edf3e6; border: 1px solid #7aad5a; color: #2d5a1a; }
+  .feedback-wrong   { background: #fdf0eb; border: 1px solid #c97a5a; color: #6e2e10; }
+  .feedback-neutral { background: #f5ede0; border: 1px solid var(--sand); color: var(--bark); }
+
+  /* ── Content Section (adaptive) ── */
+  .content-block {
+    background: var(--white);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 1.5rem 1.75rem;
+    margin-top: 1rem;
+  }
+  .pill {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 99px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pill-beginner    { background: #e6f0d8; color: #3b6015; }
+  .pill-intermediate{ background: #f0e9d8; color: #7a4e10; }
+  .pill-advanced    { background: #ede0d8; color: #6b2815; }
+
+  /* ── Visual Grid (ADDIE steps, Bloom's levels) ── */
+  .steps-grid { display: flex; flex-wrap: wrap; gap: 0.65rem; margin-top: 1rem; }
+  .step-chip {
+    padding: 0.5rem 1rem;
+    border-radius: 99px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border: 2px solid;
+  }
+  .chip-a { background: #fae8d5; border-color: #c97a3a; color: #6e3510; }
+  .chip-d { background: #e6f0d8; border-color: #5a9a30; color: #2d5510; }
+  .chip-d2{ background: #dde8f5; border-color: #3a70b5; color: #1a3d70; }
+  .chip-i { background: #f0e0f5; border-color: #8a40a5; color: #4a1570; }
+  .chip-e { background: #f5e8d8; border-color: #a07030; color: #5a3510; }
+
+  /* ── Bloom Pyramid ── */
+  .bloom-pyramid { margin: 1rem 0; }
+  .bloom-level {
+    display: flex;
+    align-items: center;
+    margin: 0.3rem auto;
+    border-radius: var(--rad-sm);
+    padding: 0.5rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: default;
+    transition: transform 0.15s;
+  }
+  .bloom-level:hover { transform: scale(1.02); }
+  .bloom-level .label { flex: 1; }
+  .bloom-level .verbs { font-weight: 400; font-size: 0.8rem; opacity: 0.8; }
+
+  /* ── Nav Bar ── */
+  .top-bar {
+    position: fixed; top: 0; left: 0; right: 0;
+    background: rgba(229,215,196,0.92);
+    backdrop-filter: blur(8px);
+    padding: 0.65rem 1.5rem;
+    display: flex; align-items: center; justify-content: space-between;
+    z-index: 100;
+    border-bottom: 1px solid rgba(76,61,25,0.12);
+  }
+  .top-bar .brand { font-weight: 700; color: var(--bark); font-size: 0.95rem; }
+  .top-bar .nav-btns { display: flex; gap: 0.5rem; }
+  .nav-pill {
+    padding: 0.3rem 0.85rem;
+    border-radius: 99px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: var(--white);
+    color: var(--bark);
+    transition: background 0.15s;
+  }
+  .nav-pill:hover { background: var(--sand); }
+
+  /* ── Badge ── */
+  .level-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--bark); color: var(--linen);
+    border-radius: 99px; padding: 0.3rem 0.9rem;
+    font-size: 0.82rem; font-weight: 600;
+  }
+
+  /* ── Reflection Screen ── */
+  .reflection-topic {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--white); border-radius: var(--rad-sm);
+    margin-bottom: 0.65rem;
+  }
+  .reflection-topic .emoji { font-size: 1.4rem; }
+  .reflection-topic .info h3 { margin: 0; font-size: 0.95rem; }
+  .reflection-topic .info p  { margin: 0; font-size: 0.82rem; }
+
+  /* ── Utility ── */
+  .mt-1 { margin-top: 0.5rem; }
+  .mt-2 { margin-top: 1rem; }
+  .mt-3 { margin-top: 1.5rem; }
+  .mb-1 { margin-bottom: 0.5rem; }
+  .mb-2 { margin-bottom: 1rem; }
+  .flex-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center; }
+  .spacer { height: 5rem; }
+
+  /* ── Padding for fixed top bar ── */
+  .padded-top { padding-top: 4rem; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FIXED TOP BAR (hidden on entry screen)
+═══════════════════════════════════════════════════════════ -->
+<div class="top-bar" id="topBar" style="display:none;">
+  <span class="brand">Learn ID Your Way</span>
+  <div class="nav-btns">
+    <button class="nav-pill" id="navMapBtn" onclick="goToMap()">Topic Map</button>
+    <button class="nav-pill" onclick="restartApp()" style="background:var(--linen);">Restart</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 1 — ENTRY / LEVEL SELECTION
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-entry" class="screen active">
+  <div class="container center">
+    <p class="small" style="letter-spacing:0.1em; text-transform:uppercase; color:var(--sage); margin-bottom:0.5rem;">An Interactive Learning Experience</p>
+    <h1>Learn Instructional Design<br>Your Way</h1>
+    <p class="lead mt-1 mb-2">Choose your experience level to begin</p>
+
+    <div class="card-row">
+      <div class="level-card" onclick="selectLevel('beginner')">
+        <div class="icon">🌱</div>
+        <h3>I'm new to Instructional Design</h3>
+        <p>Start from scratch — we'll guide you with clear explanations and relatable examples.</p>
+      </div>
+      <div class="level-card" onclick="selectLevel('intermediate')">
+        <div class="icon">🔍</div>
+        <h3>I know the basics</h3>
+        <p>Skip the hand-holding — apply concepts in realistic scenarios and deepen your practice.</p>
+      </div>
+      <div class="level-card" onclick="selectLevel('advanced')">
+        <div class="icon">⚡</div>
+        <h3>Challenge me</h3>
+        <p>No fluff — face ambiguous situations and sharpen your critical thinking.</p>
+      </div>
+    </div>
+
+    <p class="small mt-2" style="opacity:0.7;">You can explore topics in any order and restart anytime.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 2 — TOPIC MAP
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-map" class="screen padded-top">
+  <div class="container">
+    <div class="flex-row mb-1">
+      <h2 style="flex:1;">Choose a topic to explore</h2>
+      <span class="level-badge" id="mapLevelBadge">🌱 Beginner</span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+    </div>
+
+    <p class="small mb-2" id="progressText">0 of 3 topics explored</p>
+
+    <div class="topic-map">
+      <div class="topic-tile" id="tile-addie" onclick="startTopic('addie')">
+        <div class="emoji">🏗️</div>
+        <h3>ADDIE Model</h3>
+        <p class="small">The framework behind systematic course design.</p>
+      </div>
+      <div class="topic-tile" id="tile-bloom" onclick="startTopic('bloom')">
+        <div class="emoji">🧠</div>
+        <h3>Bloom's Taxonomy</h3>
+        <p class="small">Writing learning objectives that actually mean something.</p>
+      </div>
+      <div class="topic-tile" id="tile-theory" onclick="startTopic('theory')">
+        <div class="emoji">💡</div>
+        <h3>Learning Theories</h3>
+        <p class="small">How people learn — and how to design for it.</p>
+      </div>
+    </div>
+
+    <div class="mt-3 center" id="reflectPrompt" style="display:none;">
+      <button class="btn btn-primary" onclick="showScreen('screen-reflect')">View My Reflection →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 3 — ADDIE
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-addie" class="screen padded-top">
+  <div class="container">
+    <button class="btn btn-outline mb-2" style="font-size:0.85rem;padding:0.4rem 1rem;" onclick="goToMap()">← Back to Map</button>
+
+    <!-- Step 1: Scenario -->
+    <div class="card" id="addie-step1">
+      <p class="pill" style="background:#fae8d5;color:#6e3510;">Scenario</p>
+      <h2>You've been asked to build a training — fast.</h2>
+      <div class="scenario-box mt-2">
+        <strong>The situation</strong>
+        A retail manager calls you in a panic. Their team's sales are dropping and leadership wants a training delivered in two weeks. Everyone's pointing fingers. The problem isn't clear yet, but they want slides and a quiz by Friday.
+      </div>
+      <p>Before jumping in — what would <em>you</em> do first?</p>
+      <div class="choices mt-2" id="addieChoices">
+        <button class="choice-btn" onclick="addieChoice('develop')">🖥️ Start building slides and content right away</button>
+        <button class="choice-btn" onclick="addieChoice('analyze')">🔎 Pause and figure out what's actually causing the drop</button>
+        <button class="choice-btn" onclick="addieChoice('design')">📐 Draft the training structure and learning objectives first</button>
+        <button class="choice-btn" onclick="addieChoice('skip')">⚡ Just ask the manager what they want and do that</button>
+      </div>
+      <div class="feedback-box" id="addieFeedback"></div>
+    </div>
+
+    <!-- Step 2: ADDIE Content (shown after choice) -->
+    <div class="content-block" id="addie-content" style="display:none;">
+      <div id="addie-adaptive"></div>
+      <div class="mt-3 center">
+        <button class="btn btn-primary" onclick="completeTopic('addie')">Mark as explored →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 4 — BLOOM'S TAXONOMY
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-bloom" class="screen padded-top">
+  <div class="container">
+    <button class="btn btn-outline mb-2" style="font-size:0.85rem;padding:0.4rem 1rem;" onclick="goToMap()">← Back to Map</button>
+
+    <div class="card" id="bloom-step1">
+      <p class="pill" style="background:#e0eef5;color:#1a3d70;">Scenario</p>
+      <h2>Your client just sent you their learning objectives.</h2>
+      <div class="scenario-box mt-2">
+        <strong>The situation</strong>
+        You're reviewing a draft training on cybersecurity. The client wrote these objectives: <br><br>
+        <span style="font-style:normal;">
+          A — "Learners will <strong>understand</strong> phishing threats."<br>
+          B — "Learners will <strong>identify</strong> a phishing email in a simulated inbox."<br>
+          C — "Learners will <strong>evaluate</strong> whether an email policy is effective."
+        </span>
+      </div>
+      <p>Which objective is the <strong>weakest</strong> — and why?</p>
+      <div class="choices mt-2" id="bloomChoices">
+        <button class="choice-btn" onclick="bloomChoice('A')">❌ Objective A — "Understand" is vague</button>
+        <button class="choice-btn" onclick="bloomChoice('B')">❌ Objective B — "Identify" is too simple</button>
+        <button class="choice-btn" onclick="bloomChoice('C')">❌ Objective C — "Evaluate" is too complex</button>
+      </div>
+      <div class="feedback-box" id="bloomFeedback"></div>
+    </div>
+
+    <div class="content-block" id="bloom-content" style="display:none;">
+      <div id="bloom-adaptive"></div>
+      <div class="mt-3 center">
+        <button class="btn btn-primary" onclick="completeTopic('bloom')">Mark as explored →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 5 — LEARNING THEORIES
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-theory" class="screen padded-top">
+  <div class="container">
+    <button class="btn btn-outline mb-2" style="font-size:0.85rem;padding:0.4rem 1rem;" onclick="goToMap()">← Back to Map</button>
+
+    <div class="card" id="theory-step1">
+      <p class="pill" style="background:#e8e0f5;color:#4a1570;">Scenario</p>
+      <h2>You're designing an onboarding experience for new nurses.</h2>
+      <div class="scenario-box mt-2">
+        <strong>The situation</strong>
+        A hospital's education team asks you to design onboarding for 50 new nurses. Some have years of clinical experience; others just graduated. Leadership wants consistent outcomes, but the staff learns very differently. You have full creative control.
+      </div>
+      <p>How would you approach the design?</p>
+      <div class="choices mt-2" id="theoryChoices">
+        <button class="choice-btn" onclick="theoryChoice('behaviorism')">🔁 Structured modules with quizzes, repetition, and clear pass/fail criteria</button>
+        <button class="choice-btn" onclick="theoryChoice('constructivism')">🧩 Scenario-based cases where nurses discover solutions through guided exploration</button>
+        <button class="choice-btn" onclick="theoryChoice('both')">⚖️ A blend — structure for compliance content, exploration for clinical judgment</button>
+      </div>
+      <div class="feedback-box" id="theoryFeedback"></div>
+    </div>
+
+    <div class="content-block" id="theory-content" style="display:none;">
+      <div id="theory-adaptive"></div>
+      <div class="mt-3 center">
+        <button class="btn btn-primary" onclick="completeTopic('theory')">Mark as explored →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCREEN 6 — REFLECTION
+═══════════════════════════════════════════════════════════ -->
+<div id="screen-reflect" class="screen padded-top">
+  <div class="container">
+    <div class="card center mb-2">
+      <p class="pill pill-beginner" id="reflectLevelPill" style="margin:0 auto 0.75rem;">🌱 Beginner</p>
+      <h2>You made it through.</h2>
+      <p class="lead" style="margin-top:0.5rem;">Here's what you explored in this session.</p>
+    </div>
+
+    <div id="reflectTopics"></div>
+
+    <div class="card mt-2" style="background: linear-gradient(135deg,#4c3d19 0%,#354024 100%); color:var(--linen);">
+      <h2 style="color:var(--sand);">The big takeaway</h2>
+      <p style="color:var(--linen); margin-top:0.5rem; font-size:1.05rem; line-height:1.75;">
+        "Instructional design is not about following models — it's about making thoughtful decisions based on context."
+      </p>
+      <p style="color:var(--sand); font-size:0.85rem; margin-top:1rem;">Models like ADDIE, Bloom's, and learning theories are tools, not rules. The best designers know when to use them — and when to adapt.</p>
+    </div>
+
+    <div class="center mt-3">
+      <button class="btn btn-outline" onclick="restartApp()">↩ Start Over</button>
+    </div>
+    <div class="spacer"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT — STATE & LOGIC
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ── App State ── */
+let userLevel   = 'beginner';   // 'beginner' | 'intermediate' | 'advanced'
+let completed   = {};           // { addie: true, bloom: true, theory: true }
+let decisions   = {};           // store user choices per topic
+
+/* ────────────────────────────────────────────
+   LEVEL SELECTION
+──────────────────────────────────────────── */
+function selectLevel(level) {
+  userLevel = level;
+  decisions = {};
+  completed = {};
+
+  // Update UI badges
+  const labels = { beginner: '🌱 Beginner', intermediate: '🔍 Intermediate', advanced: '⚡ Advanced' };
+  document.getElementById('mapLevelBadge').textContent = labels[level];
+
+  const pillClasses = { beginner: 'pill-beginner', intermediate: 'pill-intermediate', advanced: 'pill-advanced' };
+  const pill = document.getElementById('reflectLevelPill');
+  pill.className = 'pill ' + pillClasses[level];
+  pill.textContent = labels[level];
+
+  document.getElementById('topBar').style.display = 'flex';
+  showScreen('screen-map');
+  updateProgress();
+}
+
+/* ────────────────────────────────────────────
+   NAVIGATION
+──────────────────────────────────────────── */
+function showScreen(id) {
+  if (id === 'screen-reflect') buildReflection();
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goToMap() { showScreen('screen-map'); updateProgress(); }
+
+function startTopic(topic) {
+  // Reset topic UI each visit
+  resetTopic(topic);
+  showScreen('screen-' + topic);
+}
+
+function restartApp() {
+  userLevel = 'beginner';
+  completed = {};
+  decisions = {};
+  document.getElementById('topBar').style.display = 'none';
+  ['addie','bloom','theory'].forEach(t => {
+    document.getElementById('tile-'+t).classList.remove('done');
+  });
+  document.getElementById('reflectPrompt').style.display = 'none';
+  showScreen('screen-entry');
+}
+
+/* ────────────────────────────────────────────
+   PROGRESS
+──────────────────────────────────────────── */
+function updateProgress() {
+  const count = Object.keys(completed).length;
+  document.getElementById('progressFill').style.width = (count / 3 * 100) + '%';
+  document.getElementById('progressText').textContent = count + ' of 3 topics explored';
+  if (count === 3) {
+    document.getElementById('reflectPrompt').style.display = 'block';
+  }
+}
+
+function completeTopic(topic) {
+  completed[topic] = true;
+  document.getElementById('tile-'+topic).classList.add('done');
+  updateProgress();
+  goToMap();
+}
+
+/* ────────────────────────────────────────────
+   RESET TOPIC (so re-visiting works cleanly)
+──────────────────────────────────────────── */
+function resetTopic(topic) {
+  const feedbackIds = { addie: 'addieFeedback', bloom: 'bloomFeedback', theory: 'theoryFeedback' };
+  const contentIds  = { addie: 'addie-content', bloom: 'bloom-content', theory: 'theory-content' };
+
+  const fb = document.getElementById(feedbackIds[topic]);
+  fb.className = 'feedback-box';
+  fb.innerHTML = '';
+
+  document.getElementById(contentIds[topic]).style.display = 'none';
+
+  // Re-enable all choice buttons for this topic
+  const choiceContainers = { addie: 'addieChoices', bloom: 'bloomChoices', theory: 'theoryChoices' };
+  const btns = document.querySelectorAll('#' + choiceContainers[topic] + ' .choice-btn');
+  btns.forEach(b => {
+    b.disabled = false;
+    b.className = 'choice-btn';
+  });
+}
+
+/* ────────────────────────────────────────────
+   ADDIE — INTERACTION
+──────────────────────────────────────────── */
+function addieChoice(choice) {
+  decisions.addie = choice;
+  const btns = document.querySelectorAll('#addieChoices .choice-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('addieFeedback');
+  fb.classList.add('show');
+
+  if (choice === 'analyze') {
+    btns[1].classList.add('selected-correct');
+    fb.className = 'feedback-box show feedback-correct';
+    fb.innerHTML = '<strong>Good instinct!</strong> Before designing anything, you need to understand the real problem. This is the <em>Analyze</em> phase — and skipping it is the #1 reason training fails.';
+  } else if (choice === 'develop') {
+    btns[0].classList.add('selected-wrong');
+    fb.className = 'feedback-box show feedback-wrong';
+    fb.innerHTML = '<strong>This is a common mistake.</strong> Jumping to development before analyzing the problem often leads to the wrong solution — no matter how polished the slides are.';
+  } else if (choice === 'design') {
+    btns[2].classList.add('selected-neutral');
+    fb.className = 'feedback-box show feedback-neutral';
+    fb.innerHTML = '<strong>Closer — but not quite.</strong> Design comes after Analysis. Without knowing the root cause, even a well-structured training can miss the mark entirely.';
+  } else {
+    btns[3].classList.add('selected-neutral');
+    fb.className = 'feedback-box show feedback-neutral';
+    fb.innerHTML = '<strong>Understandable, but risky.</strong> Doing what the manager says without analyzing the situation may solve the wrong problem. Analysis helps you ask the right questions.';
+  }
+
+  showAddieContent();
+}
+
+function showAddieContent() {
+  const container = document.getElementById('addie-content');
+  const adaptive  = document.getElementById('addie-adaptive');
+  container.style.display = 'block';
+
+  if (userLevel === 'beginner') {
+    adaptive.innerHTML = `
+      <span class="pill pill-beginner">Beginner Path</span>
+      <h3>Meet the ADDIE Model</h3>
+      <p style="margin-top:0.5rem;">ADDIE is a five-phase framework that helps you design training <em>systematically</em> — so you solve the right problem, not the loudest one.</p>
+      <div class="steps-grid mt-2">
+        <span class="step-chip chip-a">A — Analyze</span>
+        <span class="step-chip chip-d">D — Design</span>
+        <span class="step-chip chip-d2">D — Develop</span>
+        <span class="step-chip chip-i">I — Implement</span>
+        <span class="step-chip chip-e">E — Evaluate</span>
+      </div>
+      <div style="margin-top:1.25rem; display:flex; flex-direction:column; gap:0.65rem;">
+        <div style="background:#fae8d5;border-radius:8px;padding:0.75rem 1rem;"><strong style="color:#6e3510;">Analyze</strong><br><span style="font-size:0.9rem;color:#5a3010;">What is the actual performance problem? Who are the learners? What do they already know?</span></div>
+        <div style="background:#e6f0d8;border-radius:8px;padding:0.75rem 1rem;"><strong style="color:#2d5510;">Design</strong><br><span style="font-size:0.9rem;color:#2d5510;">Write learning objectives. Choose assessments. Map the learning flow.</span></div>
+        <div style="background:#dde8f5;border-radius:8px;padding:0.75rem 1rem;"><strong style="color:#1a3d70;">Develop</strong><br><span style="font-size:0.9rem;color:#1a3d70;">Build the actual content — slides, activities, videos, simulations.</span></div>
+        <div style="background:#f0e0f5;border-radius:8px;padding:0.75rem 1rem;"><strong style="color:#4a1570;">Implement</strong><br><span style="font-size:0.9rem;color:#4a1570;">Deliver the training to learners. Manage logistics and facilitator prep.</span></div>
+        <div style="background:#f5e8d8;border-radius:8px;padding:0.75rem 1rem;"><strong style="color:#5a3510;">Evaluate</strong><br><span style="font-size:0.9rem;color:#5a3510;">Did it work? Did performance improve? What should change next time?</span></div>
+      </div>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>Key Insight</strong>
+        Skipping Analysis is like a doctor prescribing medicine before diagnosing the patient. The ADDIE model keeps you from solving symptoms instead of causes.
+      </div>`;
+  } else if (userLevel === 'intermediate') {
+    adaptive.innerHTML = `
+      <span class="pill pill-intermediate">Intermediate Path</span>
+      <h3>Apply ADDIE to your scenario</h3>
+      <p style="margin-top:0.5rem;">You know the phases. Now think critically about what Analysis actually means in practice.</p>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>Think about this</strong>
+        If you skipped directly to Development for the sales team training, what's the <em>worst realistic outcome</em>?
+        <br><br>
+        Consider: the problem might be a process issue, a tool issue, or a motivational issue — none of which training alone can fix.
+      </div>
+      <div style="margin-top:1rem;padding:1rem;background:#f5ede0;border-radius:8px;">
+        <h3 style="margin-bottom:0.5rem;">ADDIE in the Wild</h3>
+        <p style="font-size:0.9rem;margin:0;">In real projects, ADDIE is rarely linear. Designers often run Analysis and Design in parallel, or loop back to Analysis mid-development. The model is a <em>thinking structure</em>, not a strict sequence.</p>
+      </div>
+      <p class="small mt-2">Ask yourself: which phase do you think most IDs underinvest in — and what's the cost?</p>`;
+  } else {
+    adaptive.innerHTML = `
+      <span class="pill pill-advanced">Advanced Path</span>
+      <h3>Critique the model</h3>
+      <p style="margin-top:0.5rem;">ADDIE has been criticized as slow, bureaucratic, and ill-suited to agile environments.</p>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>The Tension</strong>
+        Your organization uses two-week sprints. Stakeholders want MVP training outputs every sprint. A colleague says ADDIE is dead — SAM (Successive Approximation Model) is the only rational choice for modern ID.
+        <br><br>
+        Is she right? What assumptions is she making about project context, team maturity, and risk tolerance?
+      </div>
+      <div style="margin-top:1rem;padding:1rem;background:#f0e8d5;border-radius:8px;">
+        <p style="font-size:0.9rem;margin:0;"><strong>Consider:</strong> ADDIE vs SAM vs Design Thinking vs Agile ID. None is universally superior. What criteria would you use to select a process model? How do organizational culture, SME availability, and regulatory constraints factor in?</p>
+      </div>`;
+  }
+
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ────────────────────────────────────────────
+   BLOOM'S — INTERACTION
+──────────────────────────────────────────── */
+function bloomChoice(choice) {
+  decisions.bloom = choice;
+  const btns = document.querySelectorAll('#bloomChoices .choice-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('bloomFeedback');
+  fb.classList.add('show');
+
+  if (choice === 'A') {
+    btns[0].classList.add('selected-correct');
+    fb.className = 'feedback-box show feedback-correct';
+    fb.innerHTML = '<strong>Exactly right.</strong> "Understand" is unmeasurable. You can\'t observe or assess "understanding" directly — you can only observe what learners <em>do</em>. Bloom\'s taxonomy helps us replace vague verbs with observable ones.';
+  } else if (choice === 'B') {
+    btns[1].classList.add('selected-neutral');
+    fb.className = 'feedback-box show feedback-neutral';
+    fb.innerHTML = '<strong>Partially — but not the weakest.</strong> "Identify" is actually a strong Bloom\'s verb (Apply level). Objective B is measurable and observable. The real issue is elsewhere.';
+  } else {
+    btns[2].classList.add('selected-neutral');
+    fb.className = 'feedback-box show feedback-neutral';
+    fb.innerHTML = '<strong>Good intuition, but reconsider.</strong> "Evaluate" is actually the <em>highest</em> level of Bloom\'s — appropriate for senior learners. If this audience needs to judge policy effectiveness, C is a valid advanced objective.';
+  }
+
+  showBloomContent();
+}
+
+function showBloomContent() {
+  const container = document.getElementById('bloom-content');
+  const adaptive  = document.getElementById('bloom-adaptive');
+  container.style.display = 'block';
+
+  if (userLevel === 'beginner') {
+    adaptive.innerHTML = `
+      <span class="pill pill-beginner">Beginner Path</span>
+      <h3>Bloom's Taxonomy — A ladder of thinking</h3>
+      <p style="margin-top:0.5rem;">Bloom's describes levels of cognitive complexity. Good learning objectives use <em>action verbs</em> so you can actually measure whether learning happened.</p>
+      <div class="bloom-pyramid mt-2">
+        <div class="bloom-level" style="background:#ede0f5;border-left:4px solid #8a40a5;max-width:100%">
+          <span class="label" style="color:#4a1570;">Create</span>
+          <span class="verbs" style="color:#8a40a5;">Design, build, produce, compose</span>
+        </div>
+        <div class="bloom-level" style="background:#e0ecf5;border-left:4px solid #3a70b5;max-width:95%">
+          <span class="label" style="color:#1a3d70;">Evaluate</span>
+          <span class="verbs" style="color:#3a70b5;">Judge, critique, assess, justify</span>
+        </div>
+        <div class="bloom-level" style="background:#e6f0d8;border-left:4px solid #5a9a30;max-width:88%">
+          <span class="label" style="color:#2d5510;">Analyze</span>
+          <span class="verbs" style="color:#5a9a30;">Differentiate, compare, examine</span>
+        </div>
+        <div class="bloom-level" style="background:#f0e8d0;border-left:4px solid #a07030;max-width:80%">
+          <span class="label" style="color:#5a3510;">Apply</span>
+          <span class="verbs" style="color:#a07030;">Use, solve, demonstrate, identify</span>
+        </div>
+        <div class="bloom-level" style="background:#f5e0d8;border-left:4px solid #a05030;max-width:72%">
+          <span class="label" style="color:#6e2510;">Understand</span>
+          <span class="verbs" style="color:#a05030;">Explain, summarize, classify</span>
+        </div>
+        <div class="bloom-level" style="background:#f5ecd8;border-left:4px solid #8a6030;max-width:64%">
+          <span class="label" style="color:#5a3a10;">Remember</span>
+          <span class="verbs" style="color:#8a6030;">Recall, list, name, define</span>
+        </div>
+      </div>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>Rule of thumb</strong>
+        If you can't <em>observe</em> it, you can't assess it. Replace "understand" with "explain," "classify," or "describe." Then you can actually measure whether learning happened.
+      </div>`;
+  } else if (userLevel === 'intermediate') {
+    adaptive.innerHTML = `
+      <span class="pill pill-intermediate">Intermediate Path</span>
+      <h3>Writing objectives that hold up</h3>
+      <p style="margin-top:0.5rem;">You know Bloom's. The real challenge is alignment — does your objective match your assessment, which matches your instruction?</p>
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.65rem;">
+        <div style="background:#f5ede0;border-radius:8px;padding:0.85rem 1rem;">
+          <h3 style="margin-bottom:0.3rem;font-size:0.95rem;">The Alignment Problem</h3>
+          <p style="font-size:0.88rem;margin:0;">If your objective says "Evaluate whether an email policy is effective" (Bloom's: Evaluate) but your assessment is a multiple-choice quiz asking which policies exist (Bloom's: Remember) — you have a misalignment. The objective and assessment must live at the same cognitive level.</p>
+        </div>
+        <div style="background:#e6f0d8;border-radius:8px;padding:0.85rem 1rem;">
+          <h3 style="margin-bottom:0.3rem;font-size:0.95rem;color:#2d5510;">Try it</h3>
+          <p style="font-size:0.88rem;margin:0;color:#2d5510;">Rewrite this objective at the <strong>Apply</strong> level: "Learners will understand phishing threats." What verb would you use? What assessment would match it?</p>
+        </div>
+      </div>`;
+  } else {
+    adaptive.innerHTML = `
+      <span class="pill pill-advanced">Advanced Path</span>
+      <h3>Beyond the taxonomy</h3>
+      <p style="margin-top:0.5rem;">Bloom's 1956 taxonomy was revised in 2001 — and still has critics. Is it the right tool for every context?</p>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>The Design Challenge</strong>
+        You're designing leadership development for mid-level managers. A stakeholder insists every module must have a measurable objective mapped to Bloom's. But leadership competencies — like judgment under ambiguity, or reading a room — resist behavioral decomposition.
+        <br><br>
+        How do you push back? Or do you comply and work around it? What alternatives exist (e.g., Miller's Pyramid for clinical performance, or outcomes-based models)?
+      </div>
+      <p class="small mt-2">Consider: where does Bloom's genuinely help — and where does forcing it distort the design?</p>`;
+  }
+
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ────────────────────────────────────────────
+   LEARNING THEORIES — INTERACTION
+──────────────────────────────────────────── */
+function theoryChoice(choice) {
+  decisions.theory = choice;
+  const btns = document.querySelectorAll('#theoryChoices .choice-btn');
+  btns.forEach(b => b.disabled = true);
+
+  const fb = document.getElementById('theoryFeedback');
+  fb.classList.add('show');
+
+  if (choice === 'behaviorism') {
+    btns[0].classList.add('selected-neutral');
+    fb.className = 'feedback-box show feedback-neutral';
+    fb.innerHTML = '<strong>Consistent — but potentially rigid.</strong> Behaviorism excels for standardized, compliance-heavy content. For nurses with different experience levels, a uniform drill-and-practice model may disengage your stronger learners.';
+  } else if (choice === 'constructivism') {
+    btns[1].classList.add('selected-neutral');
+    fb.className = 'feedback-box show feedback-neutral';
+    fb.innerHTML = '<strong>Rich — but requires scaffolding.</strong> New graduates may struggle without enough structure. Constructivist design works beautifully when learners have prior knowledge to connect new ideas to.';
+  } else {
+    btns[2].classList.add('selected-correct');
+    fb.className = 'feedback-box show feedback-correct';
+    fb.innerHTML = '<strong>Thoughtful choice.</strong> Blended theory acknowledges that no single lens fits all learners or contexts. The best IDs intentionally choose theories based on learning goals, audience, and constraints — not habit.';
+  }
+
+  showTheoryContent();
+}
+
+function showTheoryContent() {
+  const container = document.getElementById('theory-content');
+  const adaptive  = document.getElementById('theory-adaptive');
+  container.style.display = 'block';
+
+  if (userLevel === 'beginner') {
+    adaptive.innerHTML = `
+      <span class="pill pill-beginner">Beginner Path</span>
+      <h3>Two ways people think about how we learn</h3>
+      <p style="margin-top:0.5rem;">Learning theories are lenses. They help you understand <em>why</em> certain design choices work — or don't.</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.25rem;">
+        <div style="background:#f5ede0;border-radius:8px;padding:1rem;border-top:4px solid #a07030;">
+          <h3 style="color:#5a3510;font-size:0.95rem;">Behaviorism</h3>
+          <p style="font-size:0.88rem;color:#7a5030;margin-top:0.3rem;">Learning = behavior change through reinforcement. Practice, feedback, repetition. Think: quizzes, drills, flashcards.</p>
+          <p style="font-size:0.82rem;color:#a07030;margin-top:0.5rem;"><strong>Best for:</strong> Compliance training, procedural skills, standardized tasks</p>
+        </div>
+        <div style="background:#e6f0d8;border-radius:8px;padding:1rem;border-top:4px solid #5a9a30;">
+          <h3 style="color:#2d5510;font-size:0.95rem;">Constructivism</h3>
+          <p style="font-size:0.88rem;color:#3a6a20;margin-top:0.3rem;">Learning = building meaning through experience. Exploration, problem-solving, reflection. Think: scenarios, case studies, projects.</p>
+          <p style="font-size:0.82rem;color:#5a9a30;margin-top:0.5rem;"><strong>Best for:</strong> Complex thinking, leadership, creative problem-solving</p>
+        </div>
+      </div>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>The Nursing Example</strong>
+        For medication dosage procedures → Behaviorism (exact, repeatable, high-stakes). For diagnosing a patient with unclear symptoms → Constructivism (build judgment, reason through cases).
+      </div>`;
+  } else if (userLevel === 'intermediate') {
+    adaptive.innerHTML = `
+      <span class="pill pill-intermediate">Intermediate Path</span>
+      <h3>Theory to design decision</h3>
+      <p style="margin-top:0.5rem;">Knowing the theory is step one. The real skill is translating it into specific design decisions.</p>
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+        <div style="background:#f5ede0;border-radius:8px;padding:0.85rem 1rem;">
+          <h3 style="font-size:0.92rem;margin-bottom:0.3rem;">Behaviorist signals in your design</h3>
+          <p style="font-size:0.88rem;margin:0;">Immediate corrective feedback, spaced repetition, mastery gates, clear pass criteria. These reduce variability and build automaticity.</p>
+        </div>
+        <div style="background:#e6f0d8;border-radius:8px;padding:0.85rem 1rem;">
+          <h3 style="font-size:0.92rem;margin-bottom:0.3rem;color:#2d5510;">Constructivist signals in your design</h3>
+          <p style="font-size:0.88rem;margin:0;color:#3a6a20;">Open-ended scenarios, reflection prompts, peer collaboration, multiple correct answers. These build transferable thinking skills.</p>
+        </div>
+        <div style="background:#e0ecf5;border-radius:8px;padding:0.85rem 1rem;">
+          <h3 style="font-size:0.92rem;margin-bottom:0.3rem;color:#1a3d70;">Where does Cognitivism fit?</h3>
+          <p style="font-size:0.88rem;margin:0;color:#1a3d70;">A third theory — focused on how working memory, schema, and cognitive load affect learning. Chunking content, using visuals, and reducing redundancy are all cognitivist design moves.</p>
+        </div>
+      </div>`;
+  } else {
+    adaptive.innerHTML = `
+      <span class="pill pill-advanced">Advanced Path</span>
+      <h3>When theories conflict in the same project</h3>
+      <div class="scenario-box mt-2" style="font-style:normal;">
+        <strong>The Messy Reality</strong>
+        Your organization's L&D strategy explicitly values "self-directed, constructivist learning." But your SME insists on a 40-question knowledge check at the end of a mandatory compliance module. Your LMS only supports linear SCORM. The learner audience includes people with low digital literacy.
+        <br><br>
+        Which theory guides your actual design? Where do you push back, and where do you compromise? What's the cost of each trade-off?
+      </div>
+      <p style="font-size:0.9rem;margin-top:0.75rem;">Consider also: connectivism (Siemens), situated cognition (Lave & Wenger), and dual coding theory (Paivio). How would any of these shift your design for the nursing onboarding?</p>`;
+  }
+
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ────────────────────────────────────────────
+   REFLECTION SCREEN BUILD
+──────────────────────────────────────────── */
+function buildReflection() {
+  const topicMeta = {
+    addie:  { emoji: '🏗️', title: 'ADDIE Model', summary: 'You explored how systematic analysis prevents training from solving the wrong problem.' },
+    bloom:  { emoji: '🧠', title: "Bloom's Taxonomy", summary: 'You examined how measurable objectives at the right cognitive level make learning assessable.' },
+    theory: { emoji: '💡', title: 'Learning Theories', summary: 'You weighed how behaviorism, constructivism, and blended approaches shape different design choices.' }
+  };
+
+  const container = document.getElementById('reflectTopics');
+  container.innerHTML = '';
+
+  ['addie','bloom','theory'].forEach(t => {
+    const done = completed[t];
+    const meta = topicMeta[t];
+    const el = document.createElement('div');
+    el.className = 'reflection-topic';
+    el.innerHTML = `
+      <span class="emoji">${meta.emoji}</span>
+      <div class="info">
+        <h3>${meta.title} ${done ? '✓' : '(not explored)'}</h3>
+        ${done ? `<p>${meta.summary}</p>` : '<p style="color:var(--muted);font-size:0.82rem;">You skipped this topic. Restart to explore it.</p>'}
+      </div>`;
+    container.appendChild(el);
+  });
+}
+
+</script>
+
+</body>
+</html>
